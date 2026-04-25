@@ -8,4 +8,5 @@ export default defineConfig({
     vue(),
     vuetify({ autoImport: true })
   ],
+  base: process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/` : '/',
 })
