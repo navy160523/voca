@@ -87,34 +87,6 @@
           다시 외우기
         </div>
 
-        <!-- 이미지 -->
-        <div class="image-container position-relative">
-          <v-img
-            :src="imageUrl"
-            cover
-            class="bg-grey-lighten-3 card-image"
-            @error="onImageError"
-            draggable="false"
-          >
-            <template v-slot:placeholder>
-              <div class="d-flex align-center justify-center fill-height bg-grey-lighten-4">
-                <v-progress-circular indeterminate color="primary"></v-progress-circular>
-              </div>
-            </template>
-          </v-img>
-          <v-btn
-            icon="mdi-bookmark-outline"
-            color="white"
-            variant="flat"
-            elevation="2"
-            size="small"
-            class="bookmark-btn position-absolute"
-            style="bottom: 12px; right: 12px;"
-            :class="{ 'text-primary': isBookmarked }"
-            @click.stop="isBookmarked = !isBookmarked"
-          ></v-btn>
-        </div>
-
         <!-- 텍스트 내용 -->
         <v-card-text class="pa-5 d-flex flex-column justify-space-between flex-grow-1">
           <div>
@@ -145,45 +117,48 @@
               </v-chip>
               <span class="text-h6 font-weight-bold text-grey-darken-3">{{ currentWord.meaning }}</span>
             </div>
+
+            <!-- 예문 영역 (항상 직접 노출) -->
+            <div class="border-t pt-4 mt-4">
+              <div class="d-flex justify-space-between align-start mb-2">
+                <p class="text-body-1 font-weight-medium text-grey-darken-3 pr-2" style="line-height: 1.4;">
+                  <span v-html="highlightWord(currentWord.example || 'No example sentence provided.', currentWord.word)"></span>
+                </p>
+                <v-btn 
+                  v-if="currentWord.example"
+                  icon="mdi-volume-high" 
+                  variant="text" 
+                  color="grey-darken-2" 
+                  size="x-small" 
+                  @click.stop="speakText(currentWord.example)"
+                ></v-btn>
+              </div>
+
+              <!-- 한글 해석 / 번역 (선택적 구글 번역 토글) -->
+              <v-expand-transition>
+                <div v-show="showTranslation">
+                  <p v-if="currentWord.example" class="text-body-2 text-grey-darken-1 font-weight-bold">
+                    {{ getKoreanTranslation(currentWord.example) }}
+                  </p>
+                </div>
+              </v-expand-transition>
+            </div>
           </div>
 
-          <!-- 예문 영역 -->
-          <div class="border-t pt-3">
-            <v-expand-transition>
-              <div v-show="showExample">
-                <div class="d-flex justify-space-between align-start mb-2">
-                  <p class="text-body-1 font-weight-medium text-grey-darken-3 pr-2" style="line-height: 1.4;">
-                    <span v-html="highlightWord(currentWord.example || 'No example sentence provided.', currentWord.word)"></span>
-                  </p>
-                  <v-btn 
-                    v-if="currentWord.example"
-                    icon="mdi-volume-high" 
-                    variant="text" 
-                    color="grey-darken-2" 
-                    size="x-small" 
-                    @click.stop="speakText(currentWord.example)"
-                  ></v-btn>
-                </div>
-                <p v-if="currentWord.example" class="text-body-2 text-grey-darken-1 font-weight-bold">
-                  {{ getKoreanTranslation(currentWord.example) }}
-                </p>
-              </div>
-            </v-expand-transition>
-
-            <div class="d-flex justify-space-between align-center mt-2">
-              <span class="text-caption text-grey-darken-1">{{ currentWord.category }}</span>
-              <v-btn 
-                variant="tonal" 
-                size="small" 
-                color="secondary" 
-                rounded="pill" 
-                class="font-weight-bold px-4" 
-                append-icon="mdi-chevron-right"
-                @click.stop="showExample = !showExample"
-              >
-                {{ showExample ? '예문 숨기기' : '예문 보기' }}
-              </v-btn>
-            </div>
+          <!-- 하단 분류 정보 및 번역 토글 버튼 -->
+          <div class="d-flex justify-space-between align-center border-t pt-3 mt-4">
+            <span class="text-caption text-grey-darken-1">{{ currentWord.category }}</span>
+            <v-btn 
+              variant="tonal" 
+              size="small" 
+              color="secondary" 
+              rounded="pill" 
+              class="font-weight-bold px-4" 
+              prepend-icon="mdi-google-translate"
+              @click.stop="showTranslation = !showTranslation"
+            >
+              {{ showTranslation ? '해석 숨기기' : '구글 번역 보기' }}
+            </v-btn>
           </div>
         </v-card-text>
       </v-card>
@@ -322,7 +297,7 @@ const nextRoundQueue = ref([]); // 틀려서 다음 회차에 넘어갈 단어 �
 const currentRound = ref(1);
 const history = ref([]);
 const completedCount = ref(0);
-const showExample = ref(false);
+const showTranslation = ref(false);
 const isBookmarked = ref(false);
 
 const totalSessionCount = computed(() => fullSessionWords.value.length);
@@ -339,18 +314,6 @@ const currentWord = computed(() => {
   if (roundQueue.value.length === 0) return null;
   return roundQueue.value[0];
 });
-
-// 이미지 로딩
-const imageUrl = computed(() => {
-  if (!currentWord.value) return '';
-  return `https://loremflickr.com/600/400/${encodeURIComponent(currentWord.value.word)}?lock=${currentWord.value.word.length * 13}`;
-});
-
-const onImageError = (event) => {
-  if (event && event.target) {
-    event.target.src = `https://picsum.photos/seed/${currentWord.value ? currentWord.value.word : 'voca'}/600/400`;
-  }
-};
 
 // 제스처 스와이프 제어
 const isDragging = ref(false);
@@ -519,7 +482,7 @@ const markAsMemorized = async () => {
 
   roundQueue.value.shift();
   completedCount.value++;
-  showExample.value = false;
+  showTranslation.value = false;
   isBookmarked.value = false;
 
   checkRoundStatus();
@@ -539,7 +502,7 @@ const markForReview = () => {
   roundQueue.value.shift();
   nextRoundQueue.value.push(word);
   
-  showExample.value = false;
+  showTranslation.value = false;
   isBookmarked.value = false;
 
   checkRoundStatus();
@@ -640,7 +603,7 @@ const undoLastAction = async () => {
     roundQueue.value.unshift(last.word);
   }
 
-  showExample.value = false;
+  showTranslation.value = false;
   isBookmarked.value = false;
 };
 
@@ -729,23 +692,6 @@ const excludeWord = () => {
   }
 }
 
-.image-container {
-  overflow: hidden;
-  height: 220px;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.card-image {
-  height: 220px;
-}
-
-/* 갤럭시 S22 Ultra 세로 비율 최적화 */
-@media (max-width: 600px) {
-  .image-container, .card-image {
-    height: 180px; /* 조금 더 크게 채움 */
-  }
-}
 
 .bookmark-btn {
   z-index: 2;

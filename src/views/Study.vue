@@ -125,36 +125,7 @@
           학습할게요
         </div>
 
-        <!-- 관련 이미지 영역 -->
-        <div class="image-container position-relative">
-          <v-img
-            :src="imageUrl"
-            cover
-            class="bg-grey-lighten-3 card-image"
-            @error="onImageError"
-            draggable="false"
-          >
-            <template v-slot:placeholder>
-              <div class="d-flex align-center justify-center fill-height bg-grey-lighten-4">
-                <v-progress-circular indeterminate color="primary"></v-progress-circular>
-              </div>
-            </template>
-          </v-img>
-          <!-- 북마크 아이콘 (데코레이션/토글) -->
-          <v-btn
-            icon="mdi-bookmark-outline"
-            color="white"
-            variant="flat"
-            elevation="2"
-            size="small"
-            class="bookmark-btn position-absolute"
-            style="bottom: 12px; right: 12px;"
-            :class="{ 'text-primary': isBookmarked }"
-            @click.stop="isBookmarked = !isBookmarked"
-          ></v-btn>
-        </div>
-
-        <!-- 단어 정보 영역 -->
+        <!-- 텍스트 내용 -->
         <v-card-text class="pa-5 d-flex flex-column justify-space-between flex-grow-1">
           <div>
             <!-- 단어 & TTS 발음 듣기 -->
@@ -184,48 +155,48 @@
               </v-chip>
               <span class="text-h6 font-weight-bold text-grey-darken-3">{{ cleanMeaning(currentWord.meaning) }}</span>
             </div>
+
+            <!-- 예문 영역 (항상 직접 노출) -->
+            <div class="border-t pt-4 mt-4">
+              <div class="d-flex justify-space-between align-start mb-2">
+                <p class="text-body-1 font-weight-medium text-grey-darken-3 pr-2" style="line-height: 1.4;">
+                  <span v-html="highlightWord(currentWord.example || 'No example sentence provided.', currentWord.word)"></span>
+                </p>
+                <v-btn 
+                  v-if="currentWord.example"
+                  icon="mdi-volume-high" 
+                  variant="text" 
+                  color="grey-darken-2" 
+                  size="x-small" 
+                  @click.stop="speakText(currentWord.example)"
+                ></v-btn>
+              </div>
+
+              <!-- 한글 해석 / 번역 (선택적 구글 번역 토글) -->
+              <v-expand-transition>
+                <div v-show="showTranslation">
+                  <p v-if="currentWord.example" class="text-body-2 text-grey-darken-1 font-weight-bold">
+                    {{ getKoreanTranslation(currentWord.example) }}
+                  </p>
+                </div>
+              </v-expand-transition>
+            </div>
           </div>
 
-          <!-- 예문 영역 -->
-          <div class="border-t pt-4">
-            <v-expand-transition>
-              <div v-show="showExample">
-                <!-- 영어 예문 & 예문 TTS -->
-                <div class="d-flex justify-space-between align-start mb-2">
-                  <p class="text-body-1 font-weight-medium text-grey-darken-3 pr-2" style="line-height: 1.4;">
-                    <span v-html="highlightWord(currentWord.example || 'No example sentence provided.', currentWord.word)"></span>
-                  </p>
-                  <v-btn 
-                    v-if="currentWord.example"
-                    icon="mdi-volume-high" 
-                    variant="text" 
-                    color="grey-darken-2" 
-                    size="x-small" 
-                    @click.stop="speakText(currentWord.example)"
-                  ></v-btn>
-                </div>
-                <!-- 한글 해석 -->
-                <p v-if="currentWord.example" class="text-body-2 text-grey-darken-1 font-weight-bold">
-                  {{ getKoreanTranslation(currentWord.example) }}
-                </p>
-              </div>
-            </v-expand-transition>
-
-            <!-- 예문 보기 토글 버튼 -->
-            <div class="d-flex justify-space-between align-center mt-3">
-              <span class="text-caption text-grey-darken-1">{{ currentWord.category }} · {{ currentWord.day }}</span>
-              <v-btn 
-                variant="tonal" 
-                size="small" 
-                color="secondary" 
-                rounded="pill" 
-                class="font-weight-bold px-4" 
-                append-icon="mdi-chevron-right"
-                @click.stop="showExample = !showExample"
-              >
-                {{ showExample ? '예문 숨기기' : '예문 보기' }}
-              </v-btn>
-            </div>
+          <!-- 하단 분류 정보 및 번역 토글 버튼 -->
+          <div class="d-flex justify-space-between align-center border-t pt-3 mt-4">
+            <span class="text-caption text-grey-darken-1">{{ currentWord.category }} · {{ currentWord.day }}</span>
+            <v-btn 
+              variant="tonal" 
+              size="small" 
+              color="secondary" 
+              rounded="pill" 
+              class="font-weight-bold px-4" 
+              prepend-icon="mdi-google-translate"
+              @click.stop="showTranslation = !showTranslation"
+            >
+              {{ showTranslation ? '해석 숨기기' : '구글 번역 보기' }}
+            </v-btn>
           </div>
         </v-card-text>
       </v-card>
@@ -330,9 +301,8 @@ const fullSessionWords = ref([]); // 이번 세션의 전체 단어 목록 (통�
 const currentWordIndex = ref(0);
 const history = ref([]); // 되돌리기용 스택
 const completedCount = ref(0); // 학습 완료(알고있음 처리된) 단어 수
-const showExample = ref(false);
+const showTranslation = ref(false);
 const isBookmarked = ref(false);
-const imageErrorCount = ref(0); // 이미지 대체 로직 방지용
 
 // 제스처 스와이프 제어
 const isDragging = ref(false);
@@ -452,22 +422,6 @@ const currentWord = computed(() => {
   if (wordQueue.value.length === 0) return null;
   return wordQueue.value[0];
 });
-
-// 이미지 URL 생성 (LoremFlickr 활용)
-const imageUrl = computed(() => {
-  if (!currentWord.value) return '';
-  // 단어가 로딩되면 LoremFlickr에서 600x400 크기의 이미지를 받아옵니다.
-  // 이미지 오류를 방지하기 위해 랜덤 시드를 매칭합니다.
-  return `https://loremflickr.com/600/400/${encodeURIComponent(currentWord.value.word)}?lock=${currentWord.value.word.length * 13}`;
-});
-
-// 이미지 로드 에러 시 대체 백그라운드
-const onImageError = (event) => {
-  // 에러 발생시 자연스러운 기본 그라데이션 이미지나 무작위 패턴 이미지로 보완
-  if (event && event.target) {
-    event.target.src = `https://picsum.photos/seed/${currentWord.value ? currentWord.value.word : 'voca'}/600/400`;
-  }
-};
 
 // 카테고리 색상
 const getCategoryColor = (cat) => {
@@ -613,7 +567,7 @@ const startStudy = async () => {
     completedCount.value = 0;
     history.value = [];
     state.value = 'active';
-    showExample.value = false;
+    showTranslation.value = false;
     isBookmarked.value = false;
   } catch (error) {
     console.error("단어 불러오기 실패:", error);
@@ -648,7 +602,7 @@ const markAsMemorized = async () => {
   // 큐에서 제거
   wordQueue.value.shift();
   completedCount.value++;
-  showExample.value = false;
+  showTranslation.value = false;
   isBookmarked.value = false;
 
   // 모든 단어 완료 여부 체크
@@ -672,7 +626,7 @@ const markForReview = () => {
   wordQueue.value.shift();
   wordQueue.value.push(current);
   
-  showExample.value = false;
+  showTranslation.value = false;
   isBookmarked.value = false;
 };
 
@@ -719,7 +673,7 @@ const undoLastAction = async () => {
     wordQueue.value.unshift(popped);
   }
   
-  showExample.value = false;
+  showTranslation.value = false;
   isBookmarked.value = false;
 };
 
@@ -754,7 +708,7 @@ const restartSession = () => {
   completedCount.value = 0;
   history.value = [];
   state.value = 'active';
-  showExample.value = false;
+  showTranslation.value = false;
   isBookmarked.value = false;
 };
 </script>
@@ -779,22 +733,6 @@ export default {
   gap: 12px;
 }
 
-.image-container {
-  overflow: hidden;
-  height: 220px;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-.card-image {
-  height: 220px;
-}
-
-@media (max-width: 600px) {
-  .image-container, .card-image {
-    height: 150px;
-  }
-}
 
 .bookmark-btn {
   z-index: 2;
