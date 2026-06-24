@@ -1,8 +1,8 @@
 <template>
-  <v-container fluid class="pa-0 pa-sm-4 animate-fade-in fill-height d-flex flex-column justify-center" style="max-width: 600px;">
+  <v-container fluid class="pa-0 pa-sm-4 animate-fade-in fill-height d-flex flex-column justify-center" style="max-width: 100%; width: 100%;">
     
     <!-- 1. 설정 화면 -->
-    <v-card v-if="state === 'setup'" elevation="3" rounded="xl" class="pa-5 w-100 my-auto">
+    <v-card v-if="state === 'setup'" elevation="3" rounded="xl" class="pa-5 w-100 my-auto" style="max-width: 600px;">
       <div class="text-center mb-6">
         <v-icon size="48" color="primary" class="mb-2">mdi-cards-playing-outline</v-icon>
         <h1 class="text-h5 font-weight-black text-primary">단어 암기 학습</h1>
@@ -12,7 +12,7 @@
       <!-- 카테고리 선택 -->
       <div class="mb-4">
         <div class="text-subtitle-2 font-weight-bold mb-1">카테고리 선택</div>
-        <v-chip-group v-model="setupCategory" selected-class="text-white" column>
+        <v-chip-group v-model="setupCategory" selected-class="text-white">
           <v-chip
             v-for="cat in categories"
             :key="cat"
