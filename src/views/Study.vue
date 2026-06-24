@@ -77,13 +77,13 @@
     </v-card>
 
     <!-- 2. 학습 진행 화면 -->
-    <div v-else-if="state === 'active' && currentWord" class="w-100 d-flex flex-column justify-space-between fill-height py-2">
+    <div v-else-if="state === 'active' && currentWord" class="w-100 d-flex flex-column justify-space-between fill-height py-1 py-sm-2">
       <!-- 상단 컨트롤 바 -->
-      <div class="d-flex align-center justify-space-between px-4 py-2 bg-transparent">
+      <div class="d-flex align-center justify-space-between px-3 px-sm-4 py-1 py-sm-2 bg-transparent">
         <v-btn icon="mdi-chevron-left" variant="text" color="grey-darken-3" @click="exitToSetup"></v-btn>
         
         <div class="d-flex align-center">
-          <v-btn icon="mdi-trash-can-outline" variant="text" size="small" color="grey-darken-1" class="mr-2" @click="excludeWord"></v-btn>
+          <v-btn icon="mdi-trash-can-outline" variant="text" size="small" color="grey-darken-1" class="mr-1 mr-sm-2" @click="excludeWord"></v-btn>
           <!-- 학습 진도 상태 -->
           <v-chip color="success" variant="flat" size="small" class="font-weight-bold px-3">
             {{ completedCount }} / {{ totalSessionCount }}
@@ -93,7 +93,7 @@
             variant="text" 
             size="small" 
             color="grey-darken-1" 
-            class="ml-2" 
+            class="ml-1 ml-sm-2" 
             :disabled="history.length === 0" 
             @click="undoLastAction"
           ></v-btn>
@@ -106,9 +106,9 @@
       <v-card 
         elevation="4" 
         rounded="xl" 
-        class="ma-4 flex-grow-1 d-flex flex-column swipe-card" 
+        class="ma-2 ma-sm-4 flex-grow-1 d-flex flex-column swipe-card" 
         :style="cardTransformStyle"
-        style="overflow: hidden; max-height: calc(100vh - 200px); touch-action: none;"
+        style="overflow: hidden; max-height: calc(100vh - 160px); touch-action: none;"
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
         @touchend="onTouchEnd"
@@ -129,9 +129,8 @@
         <div class="image-container position-relative">
           <v-img
             :src="imageUrl"
-            height="220"
             cover
-            class="bg-grey-lighten-3"
+            class="bg-grey-lighten-3 card-image"
             @error="onImageError"
             draggable="false"
           >
@@ -232,13 +231,13 @@
       </v-card>
 
       <!-- 하단 선택 버튼 -->
-      <div class="d-flex gap-3 px-4 pb-4 w-100">
+      <div class="d-flex gap-2 gap-sm-3 px-3 px-sm-4 pb-2 pb-sm-3 w-100">
         <v-btn
           color="white"
           variant="flat"
           size="x-large"
-          class="flex-grow-1 font-weight-bold py-4 border-sm"
-          style="border-color: #E0E0E0 !important; color: #333333 !important; text-transform: none; font-size: 1.1rem; border-radius: 16px;"
+          class="flex-grow-1 font-weight-bold py-3 py-sm-4 border-sm"
+          style="border-color: #E0E0E0 !important; color: #333333 !important; text-transform: none; font-size: 1.05rem; border-radius: 12px; height: 50px;"
           elevation="1"
           @click="triggerSwipeOut('left')"
         >
@@ -248,8 +247,8 @@
           color="black"
           variant="flat"
           size="x-large"
-          class="flex-grow-1 font-weight-bold py-4 text-white"
-          style="text-transform: none; font-size: 1.1rem; border-radius: 16px;"
+          class="flex-grow-1 font-weight-bold py-3 py-sm-4 text-white"
+          style="text-transform: none; font-size: 1.05rem; border-radius: 12px; height: 50px;"
           elevation="2"
           @click="triggerSwipeOut('right')"
         >
@@ -785,6 +784,16 @@ export default {
   height: 220px;
   user-select: none;
   -webkit-user-drag: none;
+}
+
+.card-image {
+  height: 220px;
+}
+
+@media (max-width: 600px) {
+  .image-container, .card-image {
+    height: 150px;
+  }
 }
 
 .bookmark-btn {
