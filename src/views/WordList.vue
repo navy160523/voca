@@ -136,7 +136,10 @@
 
               <!-- 한글 해석 / 번역 (선택적 구글 번역 토글) -->
               <v-expand-transition>
-                <div v-show="showTranslation">
+                <div v-show="showTranslation" class="mt-2">
+                  <div class="text-caption text-grey-darken-1 mb-1 font-weight-bold" style="font-size: 0.75rem; display: flex; align-items: center; gap: 4px;">
+                    <v-icon size="14" color="secondary">mdi-google-translate</v-icon>구글 번역기
+                  </div>
                   <p v-if="currentWord.example" class="text-body-2 text-grey-darken-1 font-weight-bold">
                     {{ getKoreanTranslation(currentWord.example) }}
                   </p>
