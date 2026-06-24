@@ -31,6 +31,14 @@
           rounded="lg"
         ></v-list-item>
         <v-list-item
+          to="/study"
+          prepend-icon="mdi-cards-playing-outline"
+          title="암기 학습하기"
+          value="study"
+          color="primary"
+          rounded="lg"
+        ></v-list-item>
+        <v-list-item
           to="/add"
           prepend-icon="mdi-pencil-plus"
           title="단어 등록하기"
