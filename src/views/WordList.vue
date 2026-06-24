@@ -157,7 +157,7 @@
               prepend-icon="mdi-google-translate"
               @click.stop="showTranslation = !showTranslation"
             >
-              {{ showTranslation ? '해석 숨기기' : '구글 번역 보기' }}
+              {{ showTranslation ? '구글 번역기: ON' : '구글 번역기: OFF' }}
             </v-btn>
           </div>
         </v-card-text>
