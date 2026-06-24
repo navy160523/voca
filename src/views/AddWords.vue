@@ -14,31 +14,33 @@
       </v-tab>
     </v-tabs>
 
-    <!-- 분류 선택 (두 탭 공통) -->
-    <v-card elevation="2" rounded="xl" class="pa-4 pa-sm-6 mb-6">
-      <div class="text-subtitle-1 font-weight-bold mb-2">분류 선택</div>
-      <v-chip-group v-model="selectedCategory" selected-class="text-white" column>
-        <v-chip
-          v-for="cat in categories"
-          :key="cat"
-          :value="cat"
-          :color="getCategoryColor(cat)"
-          :variant="selectedCategory === cat ? 'flat' : 'outlined'"
-          size="large"
-          rounded="lg"
-          class="font-weight-bold px-4"
-          elevation="selectedCategory === cat ? 2 : 0"
-        >
-          {{ cat }}
-        </v-chip>
-      </v-chip-group>
-    </v-card>
-
     <!-- 1. 개별 등록 탭 -->
     <v-window v-model="activeTab">
       <v-window-item value="manual">
         <v-card elevation="2" rounded="xl" class="pa-4 pa-sm-6">
           <v-form @submit.prevent="saveWords">
+            <!-- 분류 선택 -->
+            <div class="mb-6">
+              <div class="text-subtitle-1 font-weight-bold mb-2">분류 선택</div>
+              <v-chip-group v-model="selectedCategory" selected-class="text-white" column>
+                <v-chip
+                  v-for="cat in categories"
+                  :key="cat"
+                  :value="cat"
+                  :color="getCategoryColor(cat)"
+                  :variant="selectedCategory === cat ? 'flat' : 'outlined'"
+                  size="large"
+                  rounded="lg"
+                  class="font-weight-bold px-4"
+                  elevation="selectedCategory === cat ? 2 : 0"
+                >
+                  {{ cat }}
+                </v-chip>
+              </v-chip-group>
+            </div>
+
+            <v-divider class="mb-6"></v-divider>
+
             <div class="mb-8">
               <div class="text-subtitle-1 font-weight-bold mb-2">Day 선택</div>
               <v-chip-group v-model="selectedDay" selected-class="text-white" column class="day-chip-grid">
@@ -158,6 +160,28 @@
       <!-- 2. 일괄 등록 탭 -->
       <v-window-item value="bulk">
         <v-card elevation="2" rounded="xl" class="pa-4 pa-sm-6">
+          <!-- 분류 선택 -->
+          <div class="mb-6">
+            <div class="text-subtitle-1 font-weight-bold mb-2">분류 선택</div>
+            <v-chip-group v-model="selectedCategory" selected-class="text-white" column>
+              <v-chip
+                v-for="cat in categories"
+                :key="cat"
+                :value="cat"
+                :color="getCategoryColor(cat)"
+                :variant="selectedCategory === cat ? 'flat' : 'outlined'"
+                size="large"
+                rounded="lg"
+                class="font-weight-bold px-4"
+                elevation="selectedCategory === cat ? 2 : 0"
+              >
+                {{ cat }}
+              </v-chip>
+            </v-chip-group>
+          </div>
+
+          <v-divider class="mb-6"></v-divider>
+
           <v-row>
             <!-- 설정 영역 -->
             <v-col cols="12" md="6">
