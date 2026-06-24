@@ -43,6 +43,12 @@ async function run() {
       console.log(`[${i + 1}/${words.length}] Fetching for: "${cleanWord}" (Category: "${w.category}", Day: "${w.day}")...`);
 
       try {
+        // Skip if word contains Korean characters
+        if (/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(cleanWord)) {
+          console.log('  -> Skipping non-English word.');
+          continue;
+        }
+
         // Fetch example sentence from sentencedict.com
         const pageRes = await fetch(`https://sentencedict.com/${encodeURIComponent(cleanWord.toLowerCase())}.html`);
         if (!pageRes.ok) {
@@ -52,7 +58,7 @@ async function run() {
         }
         
         const html = await pageRes.text();
-        const match = html.match(/<div id="all">[\s\S]*?<div>1 (.*?)<\/div>/);
+        const match = html.match(/<div id="all">[\s\S]*?<div>1\.?\s*(.*?)<\/div>/);
         if (!match) {
           console.log('  -> No sentence found in sentencedict page.');
           await sleep(1000);
