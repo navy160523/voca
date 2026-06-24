@@ -470,22 +470,28 @@ const speakText = (text) => {
   }
 };
 
-// 단어 강조 표시 (예문 안의 타겟 단어를 굵게 표시)
+// 단어 강조 표시 (예문 안의 타겟 단어를 굵게 표시, 한국어 해석 부분은 제외)
 const highlightWord = (sentence, targetWord) => {
   if (!sentence || !targetWord) return sentence;
+  const koreanIndex = sentence.search(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/);
+  let englishPart = sentence;
+  if (koreanIndex !== -1) {
+    englishPart = sentence.substring(0, koreanIndex).trim();
+    if (englishPart.endsWith('[')) {
+      englishPart = englishPart.slice(0, -1).trim();
+    }
+  }
   const escapedTarget = targetWord.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   const regex = new RegExp(`\\b(${escapedTarget}[a-z]*)\\b`, 'gi');
-  return sentence.replace(regex, '<strong>$1</strong>');
+  return englishPart.replace(regex, '<strong>$1</strong>');
 };
 
 // 간단한 한글 해석 추출 (예문에 한국어 텍스트가 섞여있다면 잘라내기 등)
 const getKoreanTranslation = (sentence) => {
-  // 데이터 저장 방식상 한글 번역이 예문 필드에 함께 기록되어 있을 수 있음
-  // 만약 예문 필드 안에 한글이 포함되어 있다면 그 부분을 반환하고,
-  // 그렇지 않다면 '해석 정보 없음' 표시
+  if (!sentence) return '번역문 정보가 없습니다.';
   const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]+.*/;
   const match = sentence.match(koreanRegex);
-  return match ? match[0] : '도착하면 제게 연락주세요. (가상해석)';
+  return match ? match[0].replace(/[\[\]]/g, '') : '번역문 정보가 예문에 없습니다.';
 };
 
 // 간단한 품사 구별 (뜻 맨 앞 한 글자 파싱 또는 유추)

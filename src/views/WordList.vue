@@ -624,15 +624,24 @@ const speakText = (text) => {
 
 const highlightWord = (sentence, targetWord) => {
   if (!sentence || !targetWord) return sentence;
+  const koreanIndex = sentence.search(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/);
+  let englishPart = sentence;
+  if (koreanIndex !== -1) {
+    englishPart = sentence.substring(0, koreanIndex).trim();
+    if (englishPart.endsWith('[')) {
+      englishPart = englishPart.slice(0, -1).trim();
+    }
+  }
   const escapedTarget = targetWord.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   const regex = new RegExp(`\\b(${escapedTarget}[a-z]*)\\b`, 'gi');
-  return sentence.replace(regex, '<strong>$1</strong>');
+  return englishPart.replace(regex, '<strong>$1</strong>');
 };
 
 const getKoreanTranslation = (sentence) => {
+  if (!sentence) return '번역문 정보가 없습니다.';
   const koreanRegex = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]+.*/;
   const match = sentence.match(koreanRegex);
-  return match ? match[0] : '번역문 정보가 예문에 없습니다.';
+  return match ? match[0].replace(/[\[\]]/g, '') : '번역문 정보가 예문에 없습니다.';
 };
 
 const getPartOfSpeech = (meaning) => {
