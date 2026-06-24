@@ -106,9 +106,25 @@
       <v-card 
         elevation="4" 
         rounded="xl" 
-        class="ma-4 flex-grow-1 d-flex flex-column" 
-        style="overflow: hidden; max-height: calc(100vh - 200px);"
+        class="ma-4 flex-grow-1 d-flex flex-column swipe-card" 
+        :style="cardTransformStyle"
+        style="overflow: hidden; max-height: calc(100vh - 200px); touch-action: none;"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+        @mousedown="onMouseDown"
+        @mousemove="onMouseMove"
+        @mouseup="onMouseUp"
+        @mouseleave="onMouseUp"
       >
+        <!-- Swipe Indicators -->
+        <div v-if="offsetX < -20" class="swipe-indicator memorized-indicator">
+          알고 있어요
+        </div>
+        <div v-if="offsetX > 20" class="swipe-indicator review-indicator">
+          학습할게요
+        </div>
+
         <!-- 관련 이미지 영역 -->
         <div class="image-container position-relative">
           <v-img
@@ -117,6 +133,7 @@
             cover
             class="bg-grey-lighten-3"
             @error="onImageError"
+            draggable="false"
           >
             <template v-slot:placeholder>
               <div class="d-flex align-center justify-center fill-height bg-grey-lighten-4">
@@ -134,7 +151,7 @@
             class="bookmark-btn position-absolute"
             style="bottom: 12px; right: 12px;"
             :class="{ 'text-primary': isBookmarked }"
-            @click="isBookmarked = !isBookmarked"
+            @click.stop="isBookmarked = !isBookmarked"
           ></v-btn>
         </div>
 
@@ -152,7 +169,7 @@
                 color="primary" 
                 size="small" 
                 class="elevation-1"
-                @click="speakText(currentWord.word)"
+                @click.stop="speakText(currentWord.word)"
               ></v-btn>
             </div>
 
@@ -185,7 +202,7 @@
                     variant="text" 
                     color="grey-darken-2" 
                     size="x-small" 
-                    @click="speakText(currentWord.example)"
+                    @click.stop="speakText(currentWord.example)"
                   ></v-btn>
                 </div>
                 <!-- 한글 해석 -->
@@ -205,7 +222,7 @@
                 rounded="pill" 
                 class="font-weight-bold px-4" 
                 append-icon="mdi-chevron-right"
-                @click="showExample = !showExample"
+                @click.stop="showExample = !showExample"
               >
                 {{ showExample ? '예문 숨기기' : '예문 보기' }}
               </v-btn>
@@ -223,7 +240,7 @@
           class="flex-grow-1 font-weight-bold py-4 border-sm"
           style="border-color: #E0E0E0 !important; color: #333333 !important; text-transform: none; font-size: 1.1rem; border-radius: 16px;"
           elevation="1"
-          @click="markAsMemorized"
+          @click="triggerSwipeOut('left')"
         >
           알고 있어요
         </v-btn>
@@ -234,7 +251,7 @@
           class="flex-grow-1 font-weight-bold py-4 text-white"
           style="text-transform: none; font-size: 1.1rem; border-radius: 16px;"
           elevation="2"
-          @click="markForReview"
+          @click="triggerSwipeOut('right')"
         >
           학습할게요
         </v-btn>
@@ -317,6 +334,115 @@ const completedCount = ref(0); // 학습 완료(알고있음 처리된) 단어 �
 const showExample = ref(false);
 const isBookmarked = ref(false);
 const imageErrorCount = ref(0); // 이미지 대체 로직 방지용
+
+// 제스처 스와이프 제어
+const isDragging = ref(false);
+const startX = ref(0);
+const offsetX = ref(0);
+const offsetY = ref(0);
+const isSwipingOut = ref(false);
+const swipeDirection = ref(''); // 'left' | 'right'
+
+const cardTransformStyle = computed(() => {
+  if (isSwipingOut.value) {
+    const translateDir = swipeDirection.value === 'left' ? '-150%' : '150%';
+    const rot = swipeDirection.value === 'left' ? -20 : 20;
+    return {
+      transform: `translate3d(${translateDir}, 0px, 0) rotate(${rot}deg)`,
+      transition: 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+      pointerEvents: 'none'
+    };
+  }
+  
+  if (isDragging.value) {
+    const rotate = offsetX.value * 0.05;
+    return {
+      transform: `translate3d(${offsetX.value}px, ${offsetY.value * 0.2}px, 0) rotate(${rotate}deg)`,
+      transition: 'none',
+      cursor: 'grabbing'
+    };
+  }
+  
+  return {
+    transform: 'translate3d(0px, 0px, 0) rotate(0deg)',
+    transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+    cursor: 'grab'
+  };
+});
+
+const dragStart = (clientX) => {
+  if (isSwipingOut.value) return;
+  isDragging.value = true;
+  startX.value = clientX;
+  offsetX.value = 0;
+  offsetY.value = 0;
+};
+
+const dragMove = (clientX) => {
+  if (!isDragging.value) return;
+  offsetX.value = clientX - startX.value;
+};
+
+const dragEnd = () => {
+  if (!isDragging.value) return;
+  isDragging.value = false;
+  
+  const threshold = 110;
+  if (offsetX.value < -threshold) {
+    triggerSwipeOut('left');
+  } else if (offsetX.value > threshold) {
+    triggerSwipeOut('right');
+  } else {
+    offsetX.value = 0;
+    offsetY.value = 0;
+  }
+};
+
+const triggerSwipeOut = (direction) => {
+  if (isSwipingOut.value) return;
+  isSwipingOut.value = true;
+  swipeDirection.value = direction;
+  
+  setTimeout(async () => {
+    if (direction === 'left') {
+      await markAsMemorized();
+    } else {
+      markForReview();
+    }
+    offsetX.value = 0;
+    offsetY.value = 0;
+    isSwipingOut.value = false;
+    swipeDirection.value = '';
+  }, 350);
+};
+
+// 터치이벤트 핸들러
+const onTouchStart = (e) => {
+  if (e.touches && e.touches[0]) {
+    dragStart(e.touches[0].clientX);
+  }
+};
+const onTouchMove = (e) => {
+  if (e.touches && e.touches[0]) {
+    dragMove(e.touches[0].clientX);
+  }
+};
+const onTouchEnd = () => {
+  dragEnd();
+};
+
+// 마우스이벤트 핸들러
+const onMouseDown = (e) => {
+  dragStart(e.clientX);
+};
+const onMouseMove = (e) => {
+  if (e.buttons === 1) {
+    dragMove(e.clientX);
+  }
+};
+const onMouseUp = () => {
+  dragEnd();
+};
 
 const totalSessionCount = computed(() => fullSessionWords.value.length);
 const memorizedInSession = computed(() => {
@@ -657,6 +783,8 @@ export default {
 .image-container {
   overflow: hidden;
   height: 220px;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .bookmark-btn {
@@ -675,6 +803,41 @@ export default {
 
 .border-sm {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12) !important;
+}
+
+.swipe-card {
+  position: relative;
+  user-select: none;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.swipe-indicator {
+  position: absolute;
+  top: 40px;
+  padding: 10px 20px;
+  font-size: 1.6rem;
+  font-weight: 900;
+  border-radius: 8px;
+  border: 4px solid;
+  z-index: 10;
+  pointer-events: none;
+  text-transform: uppercase;
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.memorized-indicator {
+  left: 20px;
+  color: #10B981;
+  border-color: #10B981;
+  transform: rotate(-12deg);
+}
+
+.review-indicator {
+  right: 20px;
+  color: #111111;
+  border-color: #111111;
+  transform: rotate(12deg);
 }
 
 kbd {
