@@ -80,7 +80,7 @@
         style="overflow: hidden; min-height: 180px;"
       >
         <div class="text-caption text-grey-darken-1 mb-2">{{ selectedCategory }} · {{ currentDay }}</div>
-        <h2 class="text-h3 text-sm-h2 font-weight-black text-grey-darken-4 text-truncate word-title mb-2">
+        <h2 class="text-h3 text-sm-h2 font-weight-black text-high-emphasis text-truncate word-title mb-2">
           {{ currentQuestion.word }}
         </h2>
         <div class="text-body-2 text-grey-darken-1 font-italic mb-4">
@@ -150,7 +150,7 @@
               class="border-b-sm py-1"
             >
               <div class="d-flex justify-space-between align-center">
-                <span class="font-weight-bold text-grey-darken-4">{{ w.word }}</span>
+                <span class="font-weight-bold text-high-emphasis">{{ w.word }}</span>
                 <span class="text-caption text-grey-darken-1">{{ w.meaning }}</span>
               </div>
             </v-list-item>
@@ -371,7 +371,7 @@ const goToNextQuestion = () => {
 
 // 버튼 색상 피드백
 const getChoiceColor = (choice) => {
-  if (!hasAnswered.value) return 'white';
+  if (!hasAnswered.value) return 'surface';
   
   const current = currentQuestion.value;
   if (choice === current.meaning) {
@@ -380,7 +380,7 @@ const getChoiceColor = (choice) => {
   if (selectedChoice.value === choice && choice !== current.meaning) {
     return 'error'; // 내가 오답을 골랐다면 빨강
   }
-  return 'white';
+  return 'surface';
 };
 
 // TTS 발음 듣기

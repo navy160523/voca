@@ -92,7 +92,7 @@
           <div>
             <!-- 단어명 & 발음 TTS -->
             <div class="d-flex align-center justify-space-between mb-1">
-              <h2 class="text-h3 font-weight-black text-grey-darken-4 text-truncate word-title">
+              <h2 class="text-h3 font-weight-black text-high-emphasis text-truncate word-title">
                 {{ currentWord.word }}
               </h2>
               <v-btn 
@@ -115,13 +115,13 @@
               <v-chip size="x-small" color="primary" variant="flat" class="font-weight-bold mr-2 text-uppercase">
                 {{ getPartOfSpeech(currentWord.meaning) }}
               </v-chip>
-              <span class="text-h6 font-weight-bold text-grey-darken-3">{{ currentWord.meaning }}</span>
+              <span class="text-h6 font-weight-bold text-high-emphasis">{{ currentWord.meaning }}</span>
             </div>
 
             <!-- 예문 영역 (항상 직접 노출) -->
             <div class="border-t pt-4 mt-4">
               <div class="d-flex justify-space-between align-start mb-2">
-                <p class="text-body-1 font-weight-medium text-grey-darken-3 pr-2" style="line-height: 1.4;">
+                <p class="text-body-1 font-weight-medium text-high-emphasis pr-2" style="line-height: 1.4;">
                   <span v-html="highlightWord(currentWord.example || 'No example sentence provided.', currentWord.word)"></span>
                 </p>
                 <v-btn 
