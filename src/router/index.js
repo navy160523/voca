@@ -4,7 +4,7 @@ import AdminLayout from '../layouts/AdminLayout.vue'
 import Dashboard from '../views/Dashboard.vue'
 import WordList from '../views/WordList.vue'
 import AddWords from '../views/AddWords.vue'
-import Study from '../views/Study.vue'
+import Quiz from '../views/Quiz.vue'
 
 const routes = [
   {
@@ -38,9 +38,9 @@ const routes = [
         component: AddWords
       },
       {
-        path: 'study',
-        name: 'Study',
-        component: Study
+        path: 'quiz',
+        name: 'Quiz',
+        component: Quiz
       }
     ]
   }

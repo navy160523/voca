@@ -31,10 +31,10 @@
           rounded="lg"
         ></v-list-item>
         <v-list-item
-          to="/study"
-          prepend-icon="mdi-cards-playing-outline"
-          title="암기 학습하기"
-          value="study"
+          to="/quiz"
+          prepend-icon="mdi-help-circle-outline"
+          title="문제 풀기"
+          value="quiz"
           color="primary"
           rounded="lg"
         ></v-list-item>
