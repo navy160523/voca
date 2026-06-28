@@ -77,10 +77,10 @@
         elevation="4" 
         rounded="xl" 
         class="ma-2 ma-sm-4 flex-grow-1 d-flex flex-column justify-center pa-6 text-center" 
-        style="max-height: calc(100vh - 360px);"
+        style="overflow: hidden; min-height: 180px;"
       >
         <div class="text-caption text-grey-darken-1 mb-2">{{ selectedCategory }} · {{ currentDay }}</div>
-        <h2 class="text-h2 font-weight-black text-grey-darken-4 word-title mb-2">
+        <h2 class="text-h3 text-sm-h2 font-weight-black text-grey-darken-4 text-truncate word-title mb-2">
           {{ currentQuestion.word }}
         </h2>
         <div class="text-body-2 text-grey-darken-1 font-italic mb-4">
